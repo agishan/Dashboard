@@ -73,10 +73,7 @@ def app(data):
 
     filtered_data = filter_data(data)
 
-    # Create a date range covering the entire period
     full_date_range = pd.date_range(start=filtered_data['ScheduledDate'].min(), end=filtered_data['ScheduledDate'].max())
-
-    # Aggregate the data by counting the number of surgeries per day
     filtered_data_grouped = filtered_data.groupby('ScheduledDate').size().reindex(full_date_range, fill_value=0).reset_index(name='COUNT')
     filtered_data_grouped.rename(columns={'index': 'ScheduledDate'}, inplace=True)
 
@@ -99,14 +96,14 @@ def app(data):
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
-    # Calculate the average number of surgeries per day of the week
+    # Average number of surgeries per day of the week
     surgeries_per_day = filtered_data['DayOfWeek'].value_counts().reindex(
         ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     ).fillna(0)
     weeks_count = filtered_data['ScheduledDate'].nunique() / 7
     average_per_day_of_week = surgeries_per_day / weeks_count
 
-    # Visualization of the average number of surgeries per day of the week
+    # Visualization
     st.write("### Average Number of Surgeries per Day of the Week")
 
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -118,13 +115,12 @@ def app(data):
     ax.grid(True)
     st.pyplot(fig)
 
-    # Calculate the total duration of surgeries per day of the week
+
+    st.write("### Total Duration of Surgeries per Day of the Week")
     total_duration_per_day = filtered_data.groupby('DayOfWeek')['book_dur'].sum().reindex(
         ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     ).fillna(0)
 
-    # Visualization of the total duration of surgeries per day of the week
-    st.write("### Total Duration of Surgeries per Day of the Week")
 
     fig, ax = plt.subplots(figsize=(10, 6))
     total_duration_per_day.plot(kind='bar', ax=ax)
@@ -135,11 +131,11 @@ def app(data):
     ax.grid(True)
     st.pyplot(fig)
 
-    # Calculate the count of surgeries per room
+
+    # Visualization
+    st.write("### Count of Surgeries per Room")
     count_per_room = filtered_data['Roomdescription'].value_counts()
 
-    # Visualization of the count of surgeries per room
-    st.write("### Count of Surgeries per Room")
 
     fig, ax = plt.subplots(figsize=(10, 6))
     count_per_room.plot(kind='bar', ax=ax)
@@ -150,11 +146,9 @@ def app(data):
     ax.grid(True)
     st.pyplot(fig)
 
-    # Calculate the total booked duration of surgeries per room
-    duration_per_room = filtered_data.groupby('Roomdescription')['book_dur'].sum()
-
-    # Visualization of the total booked duration of surgeries per room
     st.write("### Total Booked Duration of Surgeries per Room")
+
+    duration_per_room = filtered_data.groupby('Roomdescription')['book_dur'].sum()
 
     fig, ax = plt.subplots(figsize=(10, 6))
     duration_per_room.plot(kind='bar', ax=ax)

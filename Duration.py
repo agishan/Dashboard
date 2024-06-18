@@ -8,23 +8,13 @@ def filter_data(data):
     data['ScheduledDateTime'] = pd.to_datetime(data['ScheduledDateTime'], errors='coerce')
     data['RoomEnterDateTime'] = pd.to_datetime(data['RoomEnterDateTime'], errors='coerce')
     data['RoomExitDateTime'] = pd.to_datetime(data['RoomExitDateTime'], errors='coerce')
-
-    # Filter out rows where date parsing failed
     data = data.dropna(subset=['ScheduledDateTime', 'RoomEnterDateTime', 'RoomExitDateTime'])
 
-    # Calculate the difference between scheduled and actual entry times
+    #metric calculation
     data['EntryTimeDifference'] = data['RoomEnterDateTime'] - data['ScheduledDateTime']
-
-    # Calculate the actual duration spent in the room
     data['ActualDuration'] = data['RoomExitDateTime'] - data['RoomEnterDateTime']
-
-    # Ensure book_dur is numeric and represents duration in minutes
     data['book_dur'] = pd.to_numeric(data['book_dur'], errors='coerce')
-
-    # Calculate the actual duration in minutes
     data['ActualDurationMinutes'] = data['ActualDuration'].dt.total_seconds() / 60
-
-    # Calculate the difference between scheduled and actual duration
     data['DurationDifference'] = data['ActualDurationMinutes'] - data['book_dur']
 
     st.sidebar.title("Filters")
@@ -93,11 +83,11 @@ def filter_data(data):
     return filtered_data
 
 def app(data):
-    st.title("Surgery Schedule Analysis")
+    st.title("NOT COMPLETE Surgery Schedule Analysis")
+
     st.subheader('Delay is calculated as Real Time - Booked Time, Booked time includes 15 minutes extra')
     filtered_data = filter_data(data)
 
-    # Add Summary Table
     summary_table = filtered_data.groupby('ProcedureSpecialtyDescription').agg(
         count=('ProcedureSpecialtyDescription', 'size'),
         average_booked_duration=('book_dur', 'mean'),
@@ -107,7 +97,7 @@ def app(data):
 
     st.dataframe(summary_table)
 
-    # Visualization options
+    # Visualization 
     st.write("### Duration Difference Analysis")
 
     # DurationDifference by Room

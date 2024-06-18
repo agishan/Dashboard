@@ -1,15 +1,15 @@
 # Surgical Unit Dashboard Documentation
 
 ## 1. Introduction
-The Surgical Unit Dashboard is a visualization & drill-down tool designed to provide insights into various metrics and performance indicators for the surgical unit at Cambridge Memorial Hospital. This dashboard is intended for use by research collaborators at the University of Waterloo, enabling them to analyze and interpret data related to surgical operations, patient outcomes, and resource utilization.
+The Surgical Unit Dashboard is a visualization & drill-down tool designed to provide insights into various metrics and performance indicators for the surgical unit at Cambridge Memorial Hospital. This dashboard is intended for use by researchers at the University of Waterloo.
 
 ## 2. Accessing the Dashboard
 To access the Surgical Unit Dashboard, follow these steps:
 - Clone the repository from the GitHub link provided.
-- Ensure you have the required dependencies installed (e.g., Python, Pandas, Matplotlib).
+- Ensure you have the required dependencies installed (Streamlit, Python, Pandas, Matplotlib, Plotly).
 - Open the `app.py` file and update the `file_path` variable to point to the correct location of the CSV data file(s) on your local machine.
-- Run the `app.py` file to launch the dashboard locally.
-- Open a web browser and navigate to the specified local URL (e.g., `http://localhost:8050/`).
+- Streamlit run `filepath/app.py` file to launch the dashboard locally.
+- Open a web browser and navigate to the specified local URL 
 
 ## 3. Dashboard Layout and Navigation
 The Surgical Unit Dashboard is divided into five main views, each accessible through the navigation menu on the left side of the screen. Users can switch between views by clicking on the corresponding menu item.
@@ -90,7 +90,7 @@ The Surgical Unit Dashboard is divided into five main views, each accessible thr
 
 ## 5. Common Filters and Interactions
 - **Date Range Filter:** All views include a date range filter, allowing users to specify the time period for which they want to analyze the data.
-- **Export Data:** Each view provides an option to export the filtered data as a CSV file for further analysis or reporting purposes.
+- **Export Data:** TO BE ADDED
 
 ## 6. Troubleshooting and FAQs
 - **Error: Unable to locate CSV file:** Ensure that the `file_path` variable in the `app.py` file is correctly set to the location of your CSV data file(s).

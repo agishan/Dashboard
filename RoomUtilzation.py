@@ -106,10 +106,9 @@ def app(data):
     # Apply filters
     filtered_data, start_date, end_date = filter_data(data)
 
-    # Calculate total days in the selected date range
+    # Day Calculations
     total_days = (end_date - start_date).days + 1
 
-    # Add buttons for removing weekends and civic holidays
     remove_weekends = st.sidebar.checkbox("Remove Weekends")
     remove_civic_holidays = st.sidebar.checkbox("Remove Ontario Civic Holidays")
 
@@ -122,16 +121,10 @@ def app(data):
         filtered_data = filtered_data[~filtered_data['ScheduledDate'].isin(pd.to_datetime(ontario_civic_holidays))]
         total_days -= sum(start_date <= pd.to_datetime(holiday) <= end_date for holiday in ontario_civic_holidays)
 
-    # Calculate total minutes per room and speciality
     room_speciality_group = filtered_data.groupby(['Roomdescription', 'ProcedureSpecialtyDescription'])['book_dur'].sum().unstack().fillna(0)
-    
-    # Calculate total available minutes (8 hours per workday)
     total_available_minutes = total_days * 8 * 60
-    
-    # Calculate utilization percentage
     utilization_percentage = (room_speciality_group / total_available_minutes) * 100
 
-    # Calculate total utilization percentage for each room
     room_total_utilization = utilization_percentage.sum(axis=1)
 
     # Visualization of room utilization percentage by speciality (stacked bar chart)
@@ -165,19 +158,12 @@ def app(data):
     st.write("### Speciality Utilization as Percentage of Total Minutes Scheduled per Room")
     st.dataframe(speciality_percentage_per_room)
 
-    # Calculate total minutes for each surgical priority in each room
     total_minutes_per_room_priority = filtered_data.pivot_table(values='book_dur', index='Roomdescription', columns='SurgicalPriority', aggfunc='sum', fill_value=0)
-
-    # Calculate the total minutes scheduled for each room
     total_minutes_per_room = total_minutes_per_room_priority.sum(axis=1)
-
-    # Calculate the percentage of total minutes for each surgical priority in each room priority_percentage_per_room_graph
     priority_percentage_per_room_graph = total_minutes_per_room_priority.div(total_available_minutes, axis=0) * 100
     
-
     st.write("### Surgical Priority Utilization as Percentage of Total Minutes Scheduled per Room")
   
-
     # Visualization of room utilization percentage by surgical priority (stacked bar chart)
     fig, ax = plt.subplots(figsize=(10, 6))
     priority_percentage_per_room_graph.plot(kind='bar', stacked=True, ax=ax)

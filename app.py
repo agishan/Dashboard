@@ -27,21 +27,17 @@ def get_data(path) -> pd.DataFrame:
     
 
 data = get_data(file_path)
-# Convert the date column to datetime if not already
+
+#Need to cache and store these conversions to increase speed
 data['ScheduledDate'] = pd.to_datetime(data['ScheduledDate'])
 data['SurgeryDate'] = pd.to_datetime(data['SurgeryDate'])
-
-# New Columns
 data['Surgery Year'] = data['SurgeryDate'].dt.year
 data['Surgery Month'] = data['SurgeryDate'].dt.month
 data['Surgery Day of The Month'] = data['SurgeryDate'].dt.day
 data['Surgery Day of The Week'] = data['SurgeryDate'].dt.day_name()
-# Parse date and time columns and handle errors
 data['ScheduledDateTime'] = pd.to_datetime(data['ScheduledDateTime'], errors='coerce')
 data['RoomEnterDateTime'] = pd.to_datetime(data['RoomEnterDateTime'], errors='coerce')
 data['RoomExitDateTime'] = pd.to_datetime(data['RoomExitDateTime'], errors='coerce')
-
-# Add a column for the day of the week
 data['DayOfWeek'] = data['ScheduledDate'].dt.day_name()
 
 PAGES = {

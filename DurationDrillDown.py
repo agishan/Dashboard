@@ -3,27 +3,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def filter_data(data):
-    # Parse date and time columns and handle errors
+    #data conversion
     data['ScheduledDateTime'] = pd.to_datetime(data['ScheduledDateTime'])
     data['RoomEnterDateTime'] = pd.to_datetime(data['RoomEnterDateTime'])
     data['RoomExitDateTime'] = pd.to_datetime(data['RoomExitDateTime'])
-
-    # Filter out rows where date parsing failed
     data = data.dropna(subset=['ScheduledDateTime', 'RoomEnterDateTime', 'RoomExitDateTime'])
 
-    # Calculate the difference between scheduled and actual entry times
+    #Metric Calculation
     data['EntryTimeDifference'] = data['RoomEnterDateTime'] - data['ScheduledDateTime']
-
-    # Calculate the actual duration spent in the room
     data['ActualDuration'] = data['RoomExitDateTime'] - data['RoomEnterDateTime']
-
-    # Ensure book_dur is numeric and represents duration in minutes
     data['book_dur'] = pd.to_numeric(data['book_dur'], errors='coerce')
-
-    # Calculate the actual duration in minutes
     data['ActualDurationMinutes'] = data['ActualDuration'].dt.total_seconds() / 60
-
-    # Calculate the difference between scheduled and actual duration
     data['DurationDifference'] = data['ActualDurationMinutes'] - data['book_dur']
 
     st.sidebar.title("Filters")
@@ -84,11 +74,10 @@ def filter_data(data):
     return filtered_data
 
 def app(data):
-    st.title("Surgical Specialty Delay Analysis")
+    st.title("NOT COMPLETE: Surgical Specialty Delay Analysis")
     st.subheader('Delay is calculated as Real Time - Booked Time, Booked time includes 15 minutes extra')
     filtered_data = filter_data(data)
 
-    # Add Summary Table
     summary_table = filtered_data.groupby('ProcedureDescription').agg(
         count=('ProcedureDescription', 'size'),
         average_booked_duration=('book_dur', 'mean'),
@@ -98,7 +87,7 @@ def app(data):
 
     st.dataframe(summary_table)
 
-    # Visualization options
+    # Visualizations
     st.write("### Delay Analysis")
 
     # Delay by Room
