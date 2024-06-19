@@ -7,9 +7,9 @@ The Surgical Unit Dashboard is a visualization & drill-down tool designed to pro
 To access the Surgical Unit Dashboard, follow these steps:
 - Clone the repository from the GitHub link provided.
 - Ensure you have the required dependencies installed (Streamlit, Python, Pandas, Matplotlib, Plotly).
-- Open the `app.py` file and update the `file_path` variable to point to the correct location of the CSV data file(s) on your local machine.
-- Streamlit run `filepath/app.py` file to launch the dashboard locally.
-- Open a web browser and navigate to the specified local URL 
+- Open the `app.py` file and update the `file_path` variable to point to the correct location of the CSV data file on your local machine.
+- via the terminal 'streamlit run `filepath/app.py`' to launch the dashboard locally.
+- Dashboard should open automatically otherwise open a web browser and navigate to the specified local URL 
 
 ## 3. Dashboard Layout and Navigation
 The Surgical Unit Dashboard is divided into five main views, each accessible through the navigation menu on the left side of the screen. Users can switch between views by clicking on the corresponding menu item.
@@ -95,4 +95,4 @@ The Surgical Unit Dashboard is divided into five main views, each accessible thr
 ## 6. Troubleshooting and FAQs
 - **Error: Unable to locate CSV file:** Ensure that the `file_path` variable in the `app.py` file is correctly set to the location of your CSV data file(s).
 - **Data not updating after changing filters:** Try refreshing the page or restarting the dashboard applications
-- 
+  
