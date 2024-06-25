@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 def filter_data(data):
     # Parse date and time columns and handle errors
     data['ScheduledDateTime'] = pd.to_datetime(data['ScheduledDateTime'], errors='coerce')
@@ -10,7 +9,7 @@ def filter_data(data):
     data['RoomExitDateTime'] = pd.to_datetime(data['RoomExitDateTime'], errors='coerce')
     data = data.dropna(subset=['ScheduledDateTime', 'RoomEnterDateTime', 'RoomExitDateTime'])
 
-    #metric calculation
+    # Metric calculation
     data['EntryTimeDifference'] = data['RoomEnterDateTime'] - data['ScheduledDateTime']
     data['ActualDuration'] = data['RoomExitDateTime'] - data['RoomEnterDateTime']
     data['book_dur'] = pd.to_numeric(data['book_dur'], errors='coerce')
@@ -83,9 +82,8 @@ def filter_data(data):
     return filtered_data
 
 def app(data):
-    st.title("NOT COMPLETE Surgery Schedule Analysis")
-
-    st.subheader('Delay is calculated as Real Time - Booked Time, Booked time includes 15 minutes extra')
+    st.title("Surgery Schedule Analysis")
+    st.write("Duration Difference is Actual Duration - Booked Duration (schedule)")
     filtered_data = filter_data(data)
 
     summary_table = filtered_data.groupby('ProcedureSpecialtyDescription').agg(
@@ -97,53 +95,125 @@ def app(data):
 
     st.dataframe(summary_table)
 
-    # Visualization 
-    st.write("### Duration Difference Analysis")
+    duration_by_room = filtered_data.groupby('Roomdescription').agg(
+        total_scheduled_duration=('book_dur', 'sum'),
+        total_actual_duration=('ActualDurationMinutes', 'sum')
+    ).reset_index()
 
-    # DurationDifference by Room
+     # Visualization: Duration Difference by Room
+    st.write("### Duration Difference by Room")
+
     duration_diff_by_room = filtered_data.groupby('Roomdescription').agg(
-        count=('Roomdescription', 'size'),
         average_duration_difference=('DurationDifference', 'mean')
     ).reset_index()
 
-    st.write("#### Duration Difference by Room")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    duration_diff_by_room.set_index('Roomdescription')['average_duration_difference'].plot(kind='bar', ax=ax)
-    ax.set_title('Average Duration Difference by Room')
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ax.bar(duration_diff_by_room['Roomdescription'], duration_diff_by_room['average_duration_difference'], color='skyblue')
+
     ax.set_xlabel('Room')
     ax.set_ylabel('Average Duration Difference (minutes)')
+    ax.set_title('Average Duration Difference by Room')
     plt.xticks(rotation=45)
-    st.pyplot(fig)
-    st.dataframe(duration_diff_by_room)
 
-    # DurationDifference by Surgical Specialty
+    st.pyplot(fig)
+
+    # Visualization: Scheduled Duration vs Actual Duration
+    st.write("### Scheduled vs Actual Duration")
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    bar_width = 0.4
+    index = range(len(duration_by_room))
+
+    bar1 = ax.bar(index, duration_by_room['total_scheduled_duration'], bar_width, label='Scheduled Duration')
+    bar2 = ax.bar([i + bar_width for i in index], duration_by_room['total_actual_duration'], bar_width, label='Actual Duration')
+
+    ax.set_xlabel('Room')
+    ax.set_ylabel('Duration (minutes)')
+    ax.set_title('Scheduled Duration vs Actual Duration by Room')
+    ax.set_xticks([i + bar_width / 2 for i in index])
+    ax.set_xticklabels(duration_by_room['Roomdescription'], rotation=45)
+    ax.legend()
+
+    st.pyplot(fig)
+
+    # Visualization: Duration Difference by Surgical Specialty
+    st.write("### Duration Difference by Surgical Specialty")
+
     duration_diff_by_specialty = filtered_data.groupby('ProcedureSpecialtyDescription').agg(
-        count=('ProcedureSpecialtyDescription', 'size'),
         average_duration_difference=('DurationDifference', 'mean')
     ).reset_index()
 
-    st.write("#### Duration Difference by Surgical Specialty")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    duration_diff_by_specialty.set_index('ProcedureSpecialtyDescription')['average_duration_difference'].plot(kind='bar', ax=ax)
-    ax.set_title('Average Duration Difference by Surgical Specialty')
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ax.bar(duration_diff_by_specialty['ProcedureSpecialtyDescription'], duration_diff_by_specialty['average_duration_difference'], color='salmon')
+
     ax.set_xlabel('Surgical Specialty')
     ax.set_ylabel('Average Duration Difference (minutes)')
+    ax.set_title('Average Duration Difference by Surgical Specialty')
     plt.xticks(rotation=45)
-    st.pyplot(fig)
-    st.dataframe(duration_diff_by_specialty)
 
-    # DurationDifference by Day of the Week
-    duration_diff_by_day = filtered_data.groupby(filtered_data['DayOfWeek']).agg(
-        count=('DayOfWeek', 'size'),
+    st.pyplot(fig)
+
+    # Scheduled vs Actual Duration by Surgical Specialty
+    st.write("### Scheduled vs Actual Duration by Surgical Specialty")
+
+    duration_by_specialty = filtered_data.groupby('ProcedureSpecialtyDescription').agg(
+        total_scheduled_duration=('book_dur', 'sum'),
+        total_actual_duration=('ActualDurationMinutes', 'sum')
+    ).reset_index()
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    bar_width = 0.4
+    index = range(len(duration_by_specialty))
+
+    bar1 = ax.bar(index, duration_by_specialty['total_scheduled_duration'], bar_width, label='Scheduled Duration')
+    bar2 = ax.bar([i + bar_width for i in index], duration_by_specialty['total_actual_duration'], bar_width, label='Actual Duration')
+
+    ax.set_xlabel('Surgical Specialty')
+    ax.set_ylabel('Duration (minutes)')
+    ax.set_title('Scheduled vs Actual Duration by Surgical Specialty')
+    ax.set_xticks([i + bar_width / 2 for i in index])
+    ax.set_xticklabels(duration_by_specialty['ProcedureSpecialtyDescription'], rotation=45)
+    ax.legend()
+
+    st.pyplot(fig)
+
+    # Visualization: Duration Difference by Day of the Week
+    st.write("### Duration Difference by Day of the Week")
+
+    duration_diff_by_day = filtered_data.groupby(filtered_data['ScheduledDateTime'].dt.day_name()).agg(
         average_duration_difference=('DurationDifference', 'mean')
     ).reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).reset_index()
 
-    st.write("#### Duration Difference by Day of the Week")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    duration_diff_by_day.set_index('DayOfWeek')['average_duration_difference'].plot(kind='bar', ax=ax)
-    ax.set_title('Average Duration Difference by Day of the Week')
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ax.bar(duration_diff_by_day['ScheduledDateTime'], duration_diff_by_day['average_duration_difference'], color='lightgreen')
+
     ax.set_xlabel('Day of the Week')
     ax.set_ylabel('Average Duration Difference (minutes)')
+    ax.set_title('Average Duration Difference by Day of the Week')
     plt.xticks(rotation=45)
+
     st.pyplot(fig)
-    st.dataframe(duration_diff_by_day)
+
+    # Scheduled vs Actual Duration by Day of the Week
+    st.write("### Scheduled vs Actual Duration by Day of the Week")
+
+    duration_by_day = filtered_data.groupby(filtered_data['ScheduledDateTime'].dt.day_name()).agg(
+        total_scheduled_duration=('book_dur', 'sum'),
+        total_actual_duration=('ActualDurationMinutes', 'sum')
+    ).reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).reset_index()
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    bar_width = 0.4
+    index = range(len(duration_by_day))
+
+    bar1 = ax.bar(index, duration_by_day['total_scheduled_duration'], bar_width, label='Scheduled Duration')
+    bar2 = ax.bar([i + bar_width for i in index], duration_by_day['total_actual_duration'], bar_width, label='Actual Duration')
+
+    ax.set_xlabel('Day of the Week')
+    ax.set_ylabel('Duration (minutes)')
+    ax.set_title('Scheduled vs Actual Duration by Day of the Week')
+    ax.set_xticks([i + bar_width / 2 for i in index])
+    ax.set_xticklabels(duration_by_day['ScheduledDateTime'], rotation=45)
+    ax.legend()
+
+    st.pyplot(fig)

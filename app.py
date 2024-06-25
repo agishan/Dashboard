@@ -10,6 +10,7 @@ from RoomDrillDown import app as room_drill_down_app
 from Duration import app as duration_app
 from DurationDrillDown import app as duration_drilldown_app
 from Schedule import app as schedule_app
+from ScheduleWeek import app as schedule__week_app
 
 
 # Load the dataset
@@ -50,6 +51,8 @@ PAGES = {
     'Duration Analysis': duration_app,
     "Duration Drill Down": duration_drilldown_app,
     "Schedule": schedule_app,
+    "Weekly Schedule": schedule__week_app,
+    
 }
 
 st.sidebar.title('Navigation')
