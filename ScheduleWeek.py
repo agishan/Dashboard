@@ -22,7 +22,7 @@ def app(data):
 
     # Get the start and end dates of the selected week
     start_date = pd.to_datetime(selected_date)
-    end_date = start_date + pd.Timedelta(days=6)
+    end_date = start_date + pd.Timedelta(days=13)
 
     # Filter data for the selected week
     weekly_data = filtered_data[(filtered_data['ScheduledDateTime'].dt.date >= start_date.date()) & (filtered_data['ScheduledDateTime'].dt.date <= end_date.date())]
