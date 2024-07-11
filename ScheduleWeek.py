@@ -22,7 +22,7 @@ def app(data):
 
     # Get the start and end dates of the selected week
     start_date = pd.to_datetime(selected_date)
-    end_date = start_date + pd.Timedelta(days=13)
+    end_date = start_date + pd.Timedelta(days=6)
 
     # Filter data for the selected week
     weekly_data = filtered_data[(filtered_data['ScheduledDateTime'].dt.date >= start_date.date()) & (filtered_data['ScheduledDateTime'].dt.date <= end_date.date())]
@@ -47,7 +47,7 @@ def app(data):
         st.write(f"### Schedule for Room: {room}")
         room_data = weekly_data[weekly_data['Roomdescription'] == room]
         room_data = room_data.sort_values(by='DateOnly')  # Sort days from earliest to latest
-        gantt_data = room_data[['EncounterID', 'ProcedureSpecialtyDescription', 'DayOfWeek', 'DateOnly', 'StartHour', 'EndHour', 'surgeonID']]
+        gantt_data = room_data[['EncounterID', 'ProcedureSpecialtyDescription', 'DayOfWeek', 'DateOnly', 'StartHour', 'EndHour', 'surgeonID', 'SurgicalPriority']]
         gantt_data = gantt_data.rename(columns={'ProcedureSpecialtyDescription': 'Task', 'DayOfWeek': 'Resource', 'StartHour': 'Start', 'EndHour': 'Finish'})
 
         # Create Gantt chart using Plotly
@@ -66,8 +66,30 @@ def app(data):
                 orientation='h',
                 name=row['Task'],
                 hoverinfo='text',
-                hovertext=f"Task: {row['Task']}<br>Surgeon ID: {row['surgeonID']}<br>Encounter ID: {row['EncounterID']}<br>Start: {row['Start']}<br>Finish: {row['Finish']}",
+                hovertext=f"Task: {row['Task']}<br>Surgeon ID: {row['surgeonID']}<br>Encounter ID: {row['EncounterID']}<br>Surgical Priority: {row['SurgicalPriority']}<br>Start: {row['Start']}<br>Finish: {row['Finish']}",
                 marker=dict(color=task_color_map[row['Task']])
+            ))
+
+            # Add an indicator for surgical priority
+            priority_shape = {
+                1: 'triangle-up',
+                2: 'diamond',
+                3: 'square',
+                4: 'circle',
+                5: None
+            }
+
+            fig.add_trace(go.Scatter(
+                x=[(row['Start'] + row['Finish']) / 2],
+                y=[row['DateOnly']],
+                mode='markers',
+                marker=dict(
+                    symbol=priority_shape.get(row['SurgicalPriority'], 'circle'),
+                    size=10,
+                    color='black'
+                ),
+                showlegend=False,
+                hoverinfo='skip'
             ))
 
         fig.update_layout(
@@ -91,7 +113,7 @@ def app(data):
 
         # Display the schedule table for the room
         st.write(f"### Schedule Table for Room: {room}")
-        schedule_table = room_data[['ScheduledDateTime', 'RoomEnterDateTime', 'RoomExitDateTime', 'ProcedureSpecialtyDescription', 'surgeonID', 'EncounterID']]
+        schedule_table = room_data[['ScheduledDateTime', 'RoomEnterDateTime', 'RoomExitDateTime', 'ProcedureSpecialtyDescription', 'surgeonID', 'EncounterID', 'SurgicalPriority']]
         st.dataframe(schedule_table)
 
     # Summary table showing count, sum, and average duration of surgeries in each room
@@ -103,3 +125,4 @@ def app(data):
 
     st.write("### Summary of Surgeries in Each Room")
     st.dataframe(summary)
+

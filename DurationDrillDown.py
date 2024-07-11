@@ -3,18 +3,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def filter_data(data):
-    #data conversion
+    # Data conversion
     data['ScheduledDateTime'] = pd.to_datetime(data['ScheduledDateTime'])
     data['RoomEnterDateTime'] = pd.to_datetime(data['RoomEnterDateTime'])
     data['RoomExitDateTime'] = pd.to_datetime(data['RoomExitDateTime'])
     data = data.dropna(subset=['ScheduledDateTime', 'RoomEnterDateTime', 'RoomExitDateTime'])
 
-    #Metric Calculation
-    data['EntryTimeDifference'] = data['RoomEnterDateTime'] - data['ScheduledDateTime']
+    # Metric Calculation
     data['ActualDuration'] = data['RoomExitDateTime'] - data['RoomEnterDateTime']
     data['book_dur'] = pd.to_numeric(data['book_dur'], errors='coerce')
     data['ActualDurationMinutes'] = data['ActualDuration'].dt.total_seconds() / 60
-    data['DurationDifference'] = data['ActualDurationMinutes'] - data['book_dur']
 
     st.sidebar.title("Filters")
     st.sidebar.markdown("Select the Procedure Speciality, Date options, and Rooms:")
@@ -74,90 +72,94 @@ def filter_data(data):
     return filtered_data
 
 def app(data):
-    st.title("NOT COMPLETE: Surgical Specialty Delay Analysis")
-    st.subheader('Delay is calculated as Real Time - Booked Time, Booked time includes 15 minutes extra')
+    st.title("Surgical Specialty Duration Analysis")
+    st.subheader('Comparing Real Duration and Booked Duration')
     filtered_data = filter_data(data)
 
     summary_table = filtered_data.groupby('ProcedureDescription').agg(
         count=('ProcedureDescription', 'size'),
         average_booked_duration=('book_dur', 'mean'),
-        average_real_duration=('ActualDurationMinutes', 'mean'),
-        average_delay=('DurationDifference', 'mean')
+        average_real_duration=('ActualDurationMinutes', 'mean')
     ).reset_index()
 
     st.dataframe(summary_table)
 
     # Visualizations
-    st.write("### Delay Analysis")
+    st.write("### Duration Analysis")
 
-    # Delay by Room
-    delay_by_room = filtered_data.groupby('Roomdescription').agg(
+    # Duration by Room
+    duration_by_room = filtered_data.groupby('Roomdescription').agg(
         count=('Roomdescription', 'size'),
-        average_delay=('DurationDifference', 'mean')
+        average_booked_duration=('book_dur', 'mean'),
+        average_real_duration=('ActualDurationMinutes', 'mean')
     )
 
-    st.write("#### Delay by Room")
+    st.write("#### Duration by Room")
     fig, ax = plt.subplots(figsize=(10, 6))
-    delay_by_room['average_delay'].plot(kind='bar', ax=ax)
-    ax.set_title('Average Delay by Room')
+    duration_by_room[['average_booked_duration', 'average_real_duration']].plot(kind='bar', ax=ax)
+    ax.set_title('Average Duration by Room')
     ax.set_xlabel('Room')
-    ax.set_ylabel('Average Delay (minutes)')
+    ax.set_ylabel('Average Duration (minutes)')
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
-    # Summary Table for Delay by Room
-    st.dataframe(delay_by_room.reset_index())
+    # Summary Table for Duration by Room
+    st.dataframe(duration_by_room.reset_index())
 
-    # Delay by Surgery
-    delay_by_surgery = filtered_data.groupby('ProcedureDescription').agg(
+    # Duration by Surgery
+    duration_by_surgery = filtered_data.groupby('ProcedureDescription').agg(
         count=('ProcedureDescription', 'size'),
-        average_delay=('DurationDifference', 'mean')
+        average_booked_duration=('book_dur', 'mean'),
+        average_real_duration=('ActualDurationMinutes', 'mean')
     )
 
-    st.write("#### Delay by Surgery")
+    st.write("#### Duration by Surgery")
     fig, ax = plt.subplots(figsize=(10, 6))
-    delay_by_surgery['average_delay'].plot(kind='bar', ax=ax)
-    ax.set_title('Average Delay by Surgery')
+    duration_by_surgery[['average_booked_duration', 'average_real_duration']].plot(kind='bar', ax=ax)
+    ax.set_title('Average Duration by Surgery')
     ax.set_xlabel('Surgery')
-    ax.set_ylabel('Average Delay (minutes)')
+    ax.set_ylabel('Average Duration (minutes)')
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
-    # Summary Table for Delay by Surgery
-    st.dataframe(delay_by_surgery.reset_index())
+    # Summary Table for Duration by Surgery
+    st.dataframe(duration_by_surgery.reset_index())
 
-    # Delay by Day of the Week
-    delay_by_day = filtered_data.groupby(filtered_data['ScheduledDateTime'].dt.day_name()).agg(
+    # Duration by Day of the Week
+    duration_by_day = filtered_data.groupby(filtered_data['ScheduledDateTime'].dt.day_name()).agg(
         count=('ScheduledDateTime', 'size'),
-        average_delay=('DurationDifference', 'mean')
+        average_booked_duration=('book_dur', 'mean'),
+        average_real_duration=('ActualDurationMinutes', 'mean')
     ).reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
 
-    st.write("#### Delay by Day of the Week")
+    st.write("#### Duration by Day of the Week")
     fig, ax = plt.subplots(figsize=(10, 6))
-    delay_by_day['average_delay'].plot(kind='bar', ax=ax)
-    ax.set_title('Average Delay by Day of the Week')
+    duration_by_day[['average_booked_duration', 'average_real_duration']].plot(kind='bar', ax=ax)
+    ax.set_title('Average Duration by Day of the Week')
     ax.set_xlabel('Day of the Week')
-    ax.set_ylabel('Average Delay (minutes)')
+    ax.set_ylabel('Average Duration (minutes)')
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
-    # Summary Table for Delay by Day of the Week
-    st.dataframe(delay_by_day.reset_index())
+    # Summary Table for Duration by Day of the Week
+    st.dataframe(duration_by_day.reset_index())
 
-    # Delay by Surgeon
-    delay_by_surgeon = filtered_data.groupby('surgeonID').agg(
+    # Duration by Surgeon
+    duration_by_surgeon = filtered_data.groupby('surgeonID').agg(
         count=('surgeonID', 'size'),
-        average_delay=('DurationDifference', 'mean')
+        average_booked_duration=('book_dur', 'mean'),
+        average_real_duration=('ActualDurationMinutes', 'mean')
     )
 
-    st.write("#### Delay by Surgeon")
+    st.write("#### Duration by Surgeon")
     fig, ax = plt.subplots(figsize=(10, 6))
-    delay_by_surgeon['average_delay'].plot(kind='bar', ax=ax)
-    ax.set_title('Average Delay by Surgeon')
+    duration_by_surgeon[['average_booked_duration', 'average_real_duration']].plot(kind='bar', ax=ax)
+    ax.set_title('Average Duration by Surgeon')
     ax.set_xlabel('Surgeon ID')
-    ax.set_ylabel('Average Delay (minutes)')
+    ax.set_ylabel('Average Duration (minutes)')
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
-    # Summary Table for Delay by Surgeon
-    st.dataframe(delay_by_surgeon.reset_index())
+    # Summary Table for Duration by Surgeon
+    st.dataframe(duration_by_surgeon.reset_index())
+
